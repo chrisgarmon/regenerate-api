@@ -1,10 +1,10 @@
 {
   "name": "universal-adapter",
   "version": "1.0.0",
-  "main": "src/webServer.js",
+  "main": "src/services/webServer.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node src/webServer.js"
+    "start": "node src/services/webServer.js"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^1.0.0",
