@@ -4,7 +4,7 @@
   "main": "mcpServer.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node mcpServer.js",
+    "start:mcp": "node mcpServer.js",
     "start:web": "node src/services/webServer.js"
   },
   "dependencies": {
