@@ -12,12 +12,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import axios from "axios";
 
-import {
-  McpServer,
-  SSEServerTransport,
-  HTTPServerTransport,
-  z,
-} from "@modelcontextprotocol/sdk";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { HTTPServerTransport } from "@modelcontextprotocol/sdk/server/http.js";
+import { z } from "zod";
 
 dotenv.config();
 
@@ -31,10 +29,13 @@ const server = new McpServer({
 });
 
 // ---------------------------------------------------------------
-// 2. REGISTER TOOLS (these can call your existing REST API)
+// 2. REGISTER TOOLS (call your existing REST API)
 // ---------------------------------------------------------------
 
-// 2A. Pinecone Query tool
+// NOTE: Set this in Render env for your web API service URL
+const baseUrl = process.env.UNI_ADAPTER_WEB_URL;
+
+// Pinecone Query tool
 server.tool(
   "pinecone_query",
   {
@@ -47,8 +48,11 @@ server.tool(
     }),
   },
   async ({ vector, topK, indexName, filter }) => {
-    const url = `${process.env.UNI_ADAPTER_WEB_URL}/api/pinecone/search`;
+    if (!baseUrl) {
+      throw new Error("UNI_ADAPTER_WEB_URL is not set");
+    }
 
+    const url = `${baseUrl}/api/pinecone/search`;
     const response = await axios.post(url, {
       vector,
       topK,
@@ -67,7 +71,7 @@ server.tool(
   }
 );
 
-// 2B. Pinecone Upsert tool
+// Pinecone Upsert tool
 server.tool(
   "pinecone_upsert",
   {
@@ -84,8 +88,11 @@ server.tool(
     }),
   },
   async ({ vectors, indexName }) => {
-    const url = `${process.env.UNI_ADAPTER_WEB_URL}/api/pinecone/upsert`;
+    if (!baseUrl) {
+      throw new Error("UNI_ADAPTER_WEB_URL is not set");
+    }
 
+    const url = `${baseUrl}/api/pinecone/upsert`;
     const response = await axios.post(url, {
       vectors,
       indexName,
@@ -102,7 +109,7 @@ server.tool(
   }
 );
 
-// 2C. Notion Get Page tool
+// Notion Get Page tool
 server.tool(
   "notion_get_page",
   {
@@ -112,8 +119,11 @@ server.tool(
     }),
   },
   async ({ pageId }) => {
-    const url = `${process.env.UNI_ADAPTER_WEB_URL}/api/notion/page`;
+    if (!baseUrl) {
+      throw new Error("UNI_ADAPTER_WEB_URL is not set");
+    }
 
+    const url = `${baseUrl}/api/notion/page`;
     const response = await axios.post(url, { pageId });
 
     return {
@@ -128,4 +138,38 @@ server.tool(
 );
 
 // ---------------------------------------------------------------
-// 3.
+// 3. EXPRESS APP + TRANSPORTS
+// ---------------------------------------------------------------
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Root health route
+app.get("/", (req, res) => {
+  res.json({ ok: true, message: "Official MCP server is running" });
+});
+
+// Create transports
+const sse = new SSEServerTransport("/sse");
+const httpTransport = new HTTPServerTransport("/messages");
+
+// Attach transports
+sse.attach(server);
+httpTransport.attach(server);
+
+// Register with Express
+sse.registerExpress(app);
+httpTransport.registerExpress(app);
+
+// ---------------------------------------------------------------
+// 4. START SERVER
+// ---------------------------------------------------------------
+
+const port = process.env.PORT || process.env.MCP_SERVER_PORT || 9000;
+
+app.listen(port, () => {
+  console.log(`🔥 MCP server running on port ${port}`);
+  console.log(`SSE endpoint: http://localhost:${port}/sse`);
+  console.log(`Messages endpoint: http://localhost:${port}/messages`);
+});

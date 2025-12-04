@@ -1,14 +1,13 @@
 {
   "name": "universal-adapter",
   "version": "1.0.0",
-  "main": "mcpServer.js",
   "type": "module",
   "scripts": {
-    "start:mcp": "node mcpServer.js",
-    "start:web": "node src/services/webServer.js"
+    "start:web": "node src/webServer.js",
+    "start:mcp": "node mcpServer.js"
   },
   "dependencies": {
-   "@modelcontextprotocol/sdk": "^1.24.2",
+    "@modelcontextprotocol/sdk": "^1.24.2",
     "zod": "^3.23.8",
     "express": "^4.19.0",
     "cors": "^2.8.5",
