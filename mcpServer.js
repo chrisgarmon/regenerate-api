@@ -1,12 +1,3 @@
-/**
- * REAL MCP SERVER (SSE)
- *
- * - Uses @modelcontextprotocol/sdk
- * - Exposes /sse and /messages for ChatGPT MCP connector
- * - Automatically handles MCP initialize, tools/list, tools/call
- * - Forwards tool calls to your existing REST API so you maintain logic only once
- */
-
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -14,7 +5,6 @@ import axios from "axios";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { HTTPServerTransport } from "@modelcontextprotocol/sdk/server/http.js";
 import { z } from "zod";
 
 dotenv.config();
