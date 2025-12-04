@@ -2,14 +2,19 @@ require('dotenv').config();
 const { Pinecone } = require('@pinecone-database/pinecone');
 
 const apiKey = process.env.PINECONE_API_KEY;
+const environment = process.env.PINECONE_ENVIRONMENT;
 const defaultIndexName = process.env.PINECONE_INDEX_NAME;
 
 if (!apiKey) {
   throw new Error('PINECONE_API_KEY is not set in environment');
 }
 
+if (!environment) {
+  throw new Error('PINECONE_ENVIRONMENT is not set in environment');
+}
+
 // Create Pinecone client
-const pc = new Pinecone({ apiKey });
+const pc = new Pinecone({ apiKey, environment });
 
 // Upsert vectors
 async function upsertVectors(vectors, indexName) {
