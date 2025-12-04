@@ -1,0 +1,15 @@
+{
+  "name": "universal-adapter",
+  "version": "1.0.0",
+  "main": "src/webServer.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/webServer.js"
+  },
+  "dependencies": {
+    "@pinecone-database/pinecone": "^1.0.0",
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0"
+  }
+}
