@@ -1,5 +1,12 @@
+/**
+ * REAL MCP SERVER (SSE) using @modelcontextprotocol/sdk
+ *
+ * - Exposes /sse and /messages
+ * - Uses the official SSEServerTransport pattern
+ * - Forwards tool calls to your existing universal-adapter web API
+ */
+
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
 import axios from "axios";
 
@@ -18,14 +25,13 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
+const baseUrl = process.env.UNI_ADAPTER_WEB_URL;
+
 // ---------------------------------------------------------------
 // 2. REGISTER TOOLS (call your existing REST API)
 // ---------------------------------------------------------------
 
-// NOTE: Set this in Render env for your web API service URL
-const baseUrl = process.env.UNI_ADAPTER_WEB_URL;
-
-// Pinecone Query tool
+// Pinecone Query
 server.tool(
   "pinecone_query",
   {
@@ -38,9 +44,7 @@ server.tool(
     }),
   },
   async ({ vector, topK, indexName, filter }) => {
-    if (!baseUrl) {
-      throw new Error("UNI_ADAPTER_WEB_URL is not set");
-    }
+    if (!baseUrl) throw new Error("UNI_ADAPTER_WEB_URL is not set");
 
     const url = `${baseUrl}/api/pinecone/search`;
     const response = await axios.post(url, {
@@ -52,16 +56,13 @@ server.tool(
 
     return {
       content: [
-        {
-          type: "text",
-          text: JSON.stringify(response.data, null, 2),
-        },
+        { type: "text", text: JSON.stringify(response.data, null, 2) },
       ],
     };
   }
 );
 
-// Pinecone Upsert tool
+// Pinecone Upsert
 server.tool(
   "pinecone_upsert",
   {
@@ -78,9 +79,7 @@ server.tool(
     }),
   },
   async ({ vectors, indexName }) => {
-    if (!baseUrl) {
-      throw new Error("UNI_ADAPTER_WEB_URL is not set");
-    }
+    if (!baseUrl) throw new Error("UNI_ADAPTER_WEB_URL is not set");
 
     const url = `${baseUrl}/api/pinecone/upsert`;
     const response = await axios.post(url, {
@@ -90,16 +89,13 @@ server.tool(
 
     return {
       content: [
-        {
-          type: "text",
-          text: JSON.stringify(response.data, null, 2),
-        },
+        { type: "text", text: JSON.stringify(response.data, null, 2) },
       ],
     };
   }
 );
 
-// Notion Get Page tool
+// Notion Get Page
 server.tool(
   "notion_get_page",
   {
@@ -109,47 +105,59 @@ server.tool(
     }),
   },
   async ({ pageId }) => {
-    if (!baseUrl) {
-      throw new Error("UNI_ADAPTER_WEB_URL is not set");
-    }
+    if (!baseUrl) throw new Error("UNI_ADAPTER_WEB_URL is not set");
 
     const url = `${baseUrl}/api/notion/page`;
     const response = await axios.post(url, { pageId });
 
     return {
       content: [
-        {
-          type: "text",
-          text: JSON.stringify(response.data, null, 2),
-        },
+        { type: "text", text: JSON.stringify(response.data, null, 2) },
       ],
     };
   }
 );
 
 // ---------------------------------------------------------------
-// 3. EXPRESS APP + TRANSPORTS
+// 3. EXPRESS APP + SSE TRANSPORT
 // ---------------------------------------------------------------
 
 const app = express();
-app.use(cors());
+
+// IMPORTANT: We will pass req.body explicitly to handlePostMessage
 app.use(express.json());
 
-// Root health route
-app.get("/", (req, res) => {
+// Health check
+app.get("/", (_req, res) => {
   res.json({ ok: true, message: "Official MCP server is running" });
 });
 
-// Create transports
-const sse = new SSEServerTransport("/sse");
+// Keep track of the current SSE transport (simple, single-client version)
+let transport = /** @type {SSEServerTransport | null} */ (null);
 
-// Attach transports
-sse.attach(server);
-httpTransport.attach(server);
+// /sse endpoint: establishes the SSE connection
+app.get("/sse", async (req, res) => {
+  // Create a new transport for this connection
+  transport = new SSEServerTransport("/messages", res);
 
-// Register with Express
-sse.registerExpress(app);
-httpTransport.registerExpress(app);
+  // When the client disconnects, clear the transport
+  res.on("close", () => {
+    transport = null;
+  });
+
+  // Connect MCP server to this transport
+  await server.connect(transport);
+});
+
+// /messages endpoint: receives MCP messages from the client
+app.post("/messages", async (req, res) => {
+  if (!transport) {
+    return res.status(400).send("No active transport session");
+  }
+
+  // Pass the parsed body explicitly (works with express.json())
+  await transport.handlePostMessage(req, res, req.body);
+});
 
 // ---------------------------------------------------------------
 // 4. START SERVER
