@@ -4,8 +4,8 @@
   "main": "mcpServer.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node src/services/webServer.js",
-    "start:mcp": "node src/mcpServer.js"
+    "start": "node mcpServer.js",
+    "start:web": "node src/services/webServer.js"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^1.0.0",
