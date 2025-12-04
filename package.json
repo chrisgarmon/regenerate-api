@@ -5,7 +5,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node src/services/webServer.js",
-    "start:mcp": "node src/services/mcpServer.js"
+    "start:mcp": "node src/mcpServer.js"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^1.0.0",
