@@ -142,7 +142,6 @@ app.get("/", (req, res) => {
 
 // Create transports
 const sse = new SSEServerTransport("/sse");
-const httpTransport = new HTTPServerTransport("/messages");
 
 // Attach transports
 sse.attach(server);
