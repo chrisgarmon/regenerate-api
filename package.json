@@ -1,7 +1,7 @@
 {
   "name": "universal-adapter",
   "version": "1.0.0",
-  "main": "src/services/webServer.js",
+  "main": "src/mcpServer.js",
   "type": "commonjs",
   "scripts": {
     "start": "node src/services/webServer.js",
