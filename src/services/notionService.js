@@ -1,5 +1,5 @@
-require('dotenv').config();
-const axios = require('axios');
+import 'dotenv/config';
+import axios from 'axios';
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_BASE = 'https://api.notion.com/v1';
@@ -27,6 +27,6 @@ async function getPage(pageId) {
   return res.data;
 }
 
-module.exports = {
+export {
   getPage
 };

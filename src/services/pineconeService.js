@@ -1,5 +1,5 @@
-require('dotenv').config();
-const { Pinecone } = require('@pinecone-database/pinecone');
+import 'dotenv/config';
+import { Pinecone } from '@pinecone-database/pinecone';
 
 const apiKey = process.env.PINECONE_API_KEY;
 const environment = process.env.PINECONE_ENVIRONMENT;
@@ -55,7 +55,7 @@ async function queryVectors(vector, topK = 5, indexName, filter) {
   };
 }
 
-module.exports = {
+export {
   upsertVectors,
   queryVectors
 };
