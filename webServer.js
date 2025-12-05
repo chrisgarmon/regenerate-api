@@ -2,10 +2,13 @@ import 'dotenv/config';
 import express from 'express';
 import { upsertVectors, queryVectors } from './src/services/pineconeService.js';
 import { getPage as notionGetPage } from './src/services/notionService.js';
+import cors from "cors";
 
 const app = express();
-app.use(express.json());
 
+// 🔑 Allow Framer (and others) to call your API from the browser
+app.use(cors());
+app.use(express.json());
 // Render will set PORT; fall back to WEB_SERVER_PORT or 4000
 const port = process.env.PORT || process.env.WEB_SERVER_PORT || 4000;
 
@@ -14,14 +17,19 @@ const port = process.env.PORT || process.env.WEB_SERVER_PORT || 4000;
  * -------------------------------------------------- */
 
 app.get("/api/data", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Content-Type", "application/json");
+
   const data = {
     items: [
       { id: 1, title: "First item", description: "Hello from the API" },
       { id: 2, title: "Second item", description: "More sample data" },
     ],
   };
+
   res.json(data);
 });
+
 
 // POST /api/pinecone/search
 app.post('/api/pinecone/search', async (req, res) => {
