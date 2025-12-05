@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
-const { upsertVectors, queryVectors } = require('./pineconeService');
-const { getPage: notionGetPage } = require('./notionService');
+const { upsertVectors, queryVectors } = require('.src/pineconeService');
+const { getPage: notionGetPage } = require('./src/notionService');
 
 const app = express();
 app.use(express.json());
