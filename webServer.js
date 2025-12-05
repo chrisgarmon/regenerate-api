@@ -13,8 +13,14 @@ const port = process.env.PORT || process.env.WEB_SERVER_PORT || 4000;
  * 1) REST API for your website
  * -------------------------------------------------- */
 
-app.get('/', (req, res) => {
-  res.json({ ok: true, message: 'Universal Adapter running' });
+app.get("/api/data", (req, res) => {
+  const data = {
+    items: [
+      { id: 1, title: "First item", description: "Hello from the API" },
+      { id: 2, title: "Second item", description: "More sample data" },
+    ],
+  };
+  res.json(data);
 });
 
 // POST /api/pinecone/search
