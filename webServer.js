@@ -124,6 +124,7 @@ app.post('/mcp/tools/call', async (req, res) => {
 
 /* -------------------------------------------------- */
 
-app.listen(port, () => {
-  console.log(`Universal Adapter listening on http://localhost:${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Server listening on port", PORT);
 });
