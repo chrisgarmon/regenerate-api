@@ -1,9 +1,8 @@
 {
   "name": "universal-adapter",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
-    "start:web": "node src/webServer.js",
+    "start:web": "node webServer.js",
     "start:mcp": "node mcpServer.js"
   },
   "dependencies": {
